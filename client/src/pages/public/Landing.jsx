@@ -4,6 +4,7 @@ import {
   ArrowRight, Wind, BookHeart, TrendingUp, ShieldCheck,
   MessagesSquare, Users, Lock, Sparkles,
 } from "lucide-react";
+import ShinyText from "../../components/ui/ShinyText"; 
 import Button from "../../components/common/Button";
 import GlassCard from "../../components/common/GlassCard";
 import SectionHeading from "../../components/common/SectionHeading";
@@ -33,7 +34,17 @@ export default function Landing() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full mb-5">
-              <Sparkles size={13} /> AI-powered wellbeing support
+              <Sparkles size={13} /> 
+               <ShinyText
+          text="AI-powered wellbeing support"
+          className="text-sm font-semibold"
+          speed={4}
+          delay={0}
+          color="#8b5cf6"
+          shineColor="#ffffff"
+          spread={120}
+          pauseOnHover={false}
+          />
             </span>
             <h1 className="font-display text-4xl md:text-5xl font-semibold text-ink-900 leading-[1.1]">
               Understand your wellbeing.
