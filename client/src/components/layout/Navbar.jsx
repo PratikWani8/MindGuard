@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import { useAuth } from "../../context/AuthContext";
 
 const links = [
+  { to: "/", label: "Home" },
   { to: "/about", label: "About" },
   { to: "/how-it-works", label: "How it works" },
   { to: "/privacy", label: "Privacy & Safety" },
