@@ -56,8 +56,8 @@ export default function Landing() {
               </span>
             </h1>
             <p className="mt-5 text-ink-500 text-lg max-w-lg">
-              MindGuard notices small shifts in mood, sleep and stress early — through gentle daily
-              check-ins — and offers grounded, supportive guidance long before things feel unmanageable.
+              MindGuard notices small shifts in mood, sleep and stress early through gentle daily
+              check-ins and offers grounded, supportive guidance long before things feel unmanageable.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button as={Link} to="/register" size="lg">

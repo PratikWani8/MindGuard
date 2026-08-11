@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, HeartPulse } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Button from "../common/Button";
 import { useAuth } from "../../context/AuthContext";
 
@@ -20,9 +20,12 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-4">
         <nav className="glass-strong rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-display font-semibold text-ink-900">
-            <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-aqua-500 text-white flex items-center justify-center">
-              <HeartPulse size={18} />
-            </span>
+            <img
+          src="/logo.png"
+          alt="MindGuard"
+          className="h-9 w-9 object-contain"
+        />
+
             MindGuard
           </Link>
 

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { HeartPulse } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -8,7 +7,11 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-2 font-display font-semibold text-ink-900 mb-2">
             <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-violet-500 to-aqua-500 text-white flex items-center justify-center">
-              <HeartPulse size={16} />
+              <img
+          src="/logo.png"
+          alt="MindGuard"
+          className="h-9 w-9 object-contain"
+        />
             </span>
             MindGuard
           </div>

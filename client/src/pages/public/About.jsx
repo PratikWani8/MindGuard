@@ -34,7 +34,7 @@ export default function About() {
         <h3 className="font-display text-xl font-semibold text-ink-900">Built for a hackathon, designed for real use</h3>
         <p className="text-ink-500 mt-2 leading-relaxed">
           MindGuard combines a mood and journal check-in flow, an AI analysis layer, and a support-escalation
-          path — all wrapped in a calm, distraction-free interface. It's a demonstration of what responsible,
+          path all wrapped in a calm, distraction-free interface. It's a demonstration of what responsible,
           human-centered AI in mental wellness could look like: helpful, transparent about its limits, and
           quick to bring in real people when it matters.
         </p>

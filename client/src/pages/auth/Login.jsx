@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { HeartPulse, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import GlassCard from "../../components/common/GlassCard";
 import Button from "../../components/common/Button";
 import AmbientBackground from "../../components/layout/AmbientBackground";
@@ -42,7 +42,11 @@ export default function Login() {
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 font-display font-semibold text-ink-900 mb-6">
           <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-aqua-500 text-white flex items-center justify-center">
-            <HeartPulse size={18} />
+            <img
+          src="/logo.png"
+          alt="MindGuard"
+          className="h-9 w-9 object-contain"
+        />
           </span>
           MindGuard
         </Link>

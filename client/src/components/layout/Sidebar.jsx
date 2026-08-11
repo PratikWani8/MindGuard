@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, PenSquare, BookOpen, Sparkles, TrendingUp,
-  Leaf, MessagesSquare, LifeBuoy, User, Settings, HeartPulse,
+  Leaf, MessagesSquare, LifeBuoy, User, Settings,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 
@@ -44,7 +44,11 @@ export default function Sidebar({ onNavigate }) {
     <div className="flex flex-col h-full glass-strong rounded-3xl p-4">
       <div className="flex items-center gap-2 font-display font-semibold text-ink-900 px-2 py-2 mb-4">
         <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-aqua-500 text-white flex items-center justify-center">
-          <HeartPulse size={18} />
+          <img
+          src="/logo.png"
+          alt="MindGuard"
+          className="h-9 w-9 object-contain"
+        />
         </span>
         MindGuard
       </div>

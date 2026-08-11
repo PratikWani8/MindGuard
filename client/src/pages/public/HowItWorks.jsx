@@ -49,7 +49,7 @@ export default function HowItWorks() {
         </div>
         <p className="text-sm text-ink-500 mt-4 leading-relaxed">
           These labels describe a wellbeing-support signal based on your recent check-ins and journal
-          entries — they are not a medical or psychiatric diagnosis. If you're ever in crisis, please
+          entries they are not a medical or psychiatric diagnosis. If you're ever in crisis, please
           contact local emergency services or a crisis helpline right away.
         </p>
       </GlassCard>
