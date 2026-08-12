@@ -60,12 +60,18 @@ export default function Landing() {
               check-ins and offers grounded, supportive guidance long before things feel unmanageable.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button as={Link} to="/register" size="lg">
-                Start your check-in <ArrowRight size={18} />
-              </Button>
-              <Button as={Link} to="/how-it-works" variant="secondary" size="lg">
-                See how it works
-              </Button>
+              <Link
+  to="/register"
+  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-aqua-500 text-white">
+  Start your check-in <ArrowRight size={18} />
+</Link>
+
+<Link
+  to="/how-it-works"
+  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-violet-200 text-violet-700"
+>
+  See how it works
+</Link>
             </div>
             <p className="mt-5 text-xs text-ink-400 max-w-md">
               MindGuard offers wellbeing support, not medical diagnosis. In an emergency, contact local
