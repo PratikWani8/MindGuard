@@ -1,8 +1,0 @@
-.venv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.env
-data/chroma/
-models/*
-!models/.gitkeep
