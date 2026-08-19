@@ -38,7 +38,7 @@ export default function Footer() {
           <p className="text-ink-400">If you're in crisis, please contact local emergency services or a crisis helpline immediately.</p>
         </div>
       </div>
-      <div className="text-center text-xs text-ink-300 pb-6">© 2026 MindGuard. Built for hackathon demo purposes.</div>
+      <div className="text-center text-xs text-ink-300 pb-6">© 2026 MindGuard. AI That Understands, Support & Cares.</div>
     </footer>
   );
 }
