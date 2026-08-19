@@ -52,11 +52,11 @@ export default function Privacy() {
             <Siren size={20} />
           </div>
           <div>
-            <h3 className="font-display font-semibold text-ink-900">In a crisis, we act fast — with people, not just AI</h3>
+            <h3 className="font-display font-semibold text-ink-900">In a crisis, we act fast - with people, not just AI</h3>
             <p className="text-sm text-ink-500 mt-1.5 leading-relaxed">
               If MindGuard detects signals consistent with urgent risk, you're immediately shown emergency
               contact options and connected toward human support. MindGuard never replaces emergency
-              services — if you or someone you know is in immediate danger, contact local emergency
+              services - if you or someone you know is in immediate danger, contact local emergency
               services right away.
             </p>
           </div>
