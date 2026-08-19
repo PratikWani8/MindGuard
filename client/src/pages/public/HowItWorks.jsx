@@ -5,9 +5,9 @@ import RiskBadge from "../../components/cards/RiskBadge";
 
 const flow = [
   { icon: PenSquare, title: "Daily check-in", body: "Rate your mood, stress, energy, sleep and focus in under a minute, with an optional journal entry." },
-  { icon: BrainCircuit, title: "AI journal analysis", body: "Sentiment and emotion models read your entry for stress topics and recurring themes — never for a diagnosis." },
+  { icon: BrainCircuit, title: "AI journal analysis", body: "Sentiment and emotion models read your entry for stress topics and recurring themes - never for a diagnosis." },
   { icon: TrendingUp, title: "Trend engine", body: "MindGuard compares today against your 7 and 30-day history to catch sudden changes or slow drifts." },
-  { icon: Gauge, title: "Risk-level signal", body: "A clear status — Stable, Needs attention, Elevated concern, or Urgent support recommended." },
+  { icon: Gauge, title: "Risk-level signal", body: "A clear status - Stable, Needs attention, Elevated concern, or Urgent support recommended." },
   { icon: Leaf, title: "Personalized plan", body: "Breathing exercises, mindfulness activities, sleep suggestions and journaling prompts, tailored to your patterns." },
   { icon: LifeBuoy, title: "Human support when needed", body: "Elevated or urgent signals surface real counselor and emergency resources, with human review of flagged cases." },
 ];
@@ -18,7 +18,7 @@ export default function HowItWorks() {
       <SectionHeading
         eyebrow="How it works"
         title="From a two-minute check-in to a clear next step"
-        description="Every part of MindGuard is designed to be transparent about what it knows and doesn't know — and to bring in real people the moment that's the right call."
+        description="Every part of MindGuard is designed to be transparent about what it knows and doesn't know and to bring in real people the moment that's the right call."
       />
 
       <div className="mt-14 relative">
