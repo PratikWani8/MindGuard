@@ -106,7 +106,7 @@ export default function Landing() {
             <SectionHeading
               eyebrow="The problem"
               title="Most people notice burnout only after it's already here."
-              description="Stress, poor sleep and low mood build quietly across weeks of check-ins and journal entries — invisible day-to-day, obvious only in hindsight. MindGuard exists to catch the pattern earlier."
+              description="Stress, poor sleep and low mood build quietly across weeks of check-ins and journal entries invisible day-to-day, obvious only in hindsight. MindGuard exists to catch the pattern earlier."
             />
           </div>
           <GlassCard>
@@ -183,7 +183,7 @@ export default function Landing() {
             </div>
             <h3 className="font-display text-2xl font-semibold text-ink-900">Your entries are yours.</h3>
             <p className="text-ink-500 mt-2 leading-relaxed max-w-xl">
-              Journal content is analyzed to support you — never sold, never shared without consent, and
+              Journal content is analyzed to support you never sold, never shared without consent, and
               flagged situations are reviewed by real people before any escalation happens.
             </p>
           </div>
