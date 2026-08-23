@@ -1,4 +1,4 @@
-# MindGuard AI Service — README
+# MindGuard AI Service 
 
 ## Overview
 
