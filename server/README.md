@@ -25,29 +25,6 @@ npm run dev
 
 The API runs on `http://localhost:5000`.
 
-## Environment
-
-- `PORT` — Express port
-- `MONGO_URI` — MongoDB connection string
-- `JWT_SECRET` — strong signing secret
-- `JWT_EXPIRES_IN` — e.g. `7d`
-- `AI_SERVICE_URL` — FastAPI base URL
-- `CLIENT_URL` — React frontend origin
-
-Never commit `.env`.
-
-## Authentication
-
-Register/login returns a JWT:
-
-```http
-Authorization: Bearer <token>
-```
-
-Protected endpoints require this header.
-
-Logout is stateless in the current JWT architecture: the client removes its token. For server-side revocation, add a token/session blacklist later.
-
 ## AI integration
 
 Node delegates AI work to FastAPI.
@@ -99,7 +76,3 @@ See `docs/API.md`.
   "journalText": "I have several assignments this week."
 }
 ```
-
-## Production notes
-
-Use a managed MongoDB deployment, HTTPS, a strong secret, restricted CORS origins, centralized logging/monitoring, and a persistent token/session revocation strategy if logout must invalidate already-issued JWTs.
