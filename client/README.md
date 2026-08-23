@@ -1,4 +1,4 @@
-# MindGuard — Frontend
+# MindGuard Frontend
 
 A complete, runnable React + Vite frontend for **MindGuard**, an AI-powered mental
 wellness early-warning and support platform. This is the frontend only — it talks
