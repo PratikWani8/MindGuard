@@ -1,29 +1,61 @@
-const base = () => (process.env.AI_SERVICE_URL || "http://localhost:8000").replace(/\/$/, "");
+import axios from "axios";
 
-async function post(path, payload) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(`${base()}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-    const text = await response.text();
-    let data = {};
-    try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
-    if (!response.ok) {
-      const err = new Error(data.message || `AI service returned ${response.status}`);
-      err.statusCode = 502;
-      throw err;
+const AI_BASE_URL =
+  process.env.AI_SERVICE_URL || "http://localhost:8000";
+
+export const analyzeCheckIn = async (payload) => {
+  const response = await axios.post(
+    `${AI_BASE_URL}/api/v1/checkin/analyze`,
+    payload,
+    {
+      timeout: 60000,
     }
-    return data;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+  );
 
-export const analyzeJournal = (payload) => post("/api/v1/analyze/journal", payload);
-export const analyzeCheckIn = (payload) => post("/api/v1/analyze/checkin", payload);
-export const chatWithAI = (payload) => post("/api/v1/chat", payload);
+  return response.data;
+};
+
+export const analyzeJournal = async ({ userId, text }) => {
+  const response = await axios.post(
+    `${AI_BASE_URL}/api/v1/journal/analyze`,
+    {
+      userId,
+      text,
+    },
+    {
+      timeout: 60000,
+    }
+  );
+
+  return response.data;
+};
+
+export const chatWithAI = async (payload) => {
+  const response = await axios.post(
+    `${AI_BASE_URL}/api/v1/chat`,
+    payload,
+    {
+      timeout: 60000,
+    }
+  );
+
+  return response.data;
+};
+
+export const reasonWithAgent = async ({
+  userId,
+  context,
+}) => {
+  const response = await axios.post(
+    `${AI_BASE_URL}/api/v1/agent/reason`,
+    {
+      userId,
+      context,
+    },
+    {
+      timeout: 60000,
+    }
+  );
+
+  return response.data;
+};
