@@ -1,7 +1,7 @@
-# MindGuard — Frontend
+# MindGuard Frontend
 
 A complete, runnable React + Vite frontend for **MindGuard**, an AI-powered mental
-wellness early-warning and support platform. This is the frontend only — it talks
+wellness early-warning and support platform. This is the frontend only - it talks
 to the Node/Express + FastAPI backend through a configurable `VITE_API_URL`.
 
 ## Stack
