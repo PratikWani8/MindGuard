@@ -1,52 +1,144 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { loginRequest, registerRequest, fetchCurrentUser, logoutRequest } from "../services/authApi";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  getMe,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../services/authApi";
 
-const AuthContext = createContext(null);
+const C = createContext(null);
+
+const getToken = () =>
+  localStorage.getItem("mindguard_token") ||
+  sessionStorage.getItem("mindguard_token");
+
+const getStoredUser = () => {
+  try {
+    return JSON.parse(
+      localStorage.getItem("mindguard_user") ||
+        sessionStorage.getItem("mindguard_user") ||
+        "null"
+    );
+  } catch {
+    return null;
+  }
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [t, setT] = useState(getToken());
+  const [user, setUser] = useState(getStoredUser());
+  const [loading, setLoading] = useState(!!getToken());
+
+  const clear = () => {
+    localStorage.removeItem("mindguard_token");
+    localStorage.removeItem("mindguard_user");
+    sessionStorage.removeItem("mindguard_token");
+    sessionStorage.removeItem("mindguard_user");
+
+    setT(null);
+    setUser(null);
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("mindguard_token");
-    if (!token) {
+    const currentToken = getToken();
+
+    if (!currentToken) {
       setLoading(false);
       return;
     }
-    fetchCurrentUser()
-      .then(setUser)
-      .catch(() => localStorage.removeItem("mindguard_token"))
-      .finally(() => setLoading(false));
+
+    getMe()
+      .then((r) => {
+        setUser(r.data.data.user);
+      })
+      .catch(() => {
+        clear();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  const login = useCallback(async (credentials) => {
-    const { token, user: u } = await loginRequest(credentials);
-    localStorage.setItem("mindguard_token", token);
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      clear();
+    };
+
+    window.addEventListener("mindguard:unauthorized", handleUnauthorized);
+
+    return () => {
+      window.removeEventListener(
+        "mindguard:unauthorized",
+        handleUnauthorized
+      );
+    };
+  }, []);
+
+  const persist = (tk, u, remember) => {
+    const storage = remember ? localStorage : sessionStorage;
+    const otherStorage = remember ? sessionStorage : localStorage;
+
+    otherStorage.removeItem("mindguard_token");
+    otherStorage.removeItem("mindguard_user");
+
+    storage.setItem("mindguard_token", tk);
+    storage.setItem("mindguard_user", JSON.stringify(u));
+
+    setT(tk);
     setUser(u);
-    return u;
-  }, []);
+  };
 
-  const register = useCallback(async (payload) => {
-    const { token, user: u } = await registerRequest(payload);
-    localStorage.setItem("mindguard_token", token);
-    setUser(u);
-    return u;
-  }, []);
+  const login = async (payload, remember = true) => {
+    const response = await loginUser(payload);
 
-  const logout = useCallback(() => {
-    logoutRequest();
-    setUser(null);
-  }, []);
+    persist(
+      response.data.data.token,
+      response.data.data.user,
+      remember
+    );
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, isAuthenticated: !!user }}>
-      {children}
-    </AuthContext.Provider>
+    return response;
+  };
+
+  const register = async (payload, remember = true) => {
+    const response = await registerUser(payload);
+
+    persist(
+      response.data.data.token,
+      response.data.data.user,
+      remember
+    );
+
+    return response;
+  };
+
+  const logout = async () => {
+    try {
+      if (t) {
+        await logoutUser();
+      }
+    } catch {
+    
+    }
+
+    clear();
+  };
+
+  const value = useMemo(
+    () => ({
+      token: t,
+      user,
+      loading,
+      isAuthenticated: !!(t && user),
+      login,
+      register,
+      logout,
+      setUser,
+    }),
+    [t, user, loading]
   );
+
+  return <C.Provider value={value}>{children}</C.Provider>;
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-}
+export const useAuth = () => useContext(C);
