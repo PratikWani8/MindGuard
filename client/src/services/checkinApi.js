@@ -1,29 +1,104 @@
-import api, { USE_MOCKS, delay } from "./api";
-import { moodTrend7d, moodTrend30d } from "../data/mockData";
+import api from "./api";
 
 export async function submitCheckin(payload) {
-  if (USE_MOCKS) {
-    await delay(900);
-    return { id: "chk_" + Date.now(), ...payload, submittedAt: new Date().toISOString() };
-  }
-  const { data } = await api.post("/checkins", payload);
-  return data;
+  console.log("SUBMIT CHECK-IN:", payload);
+
+  const response = await api.post("/api/checkins", payload);
+
+  console.log("CHECK-IN RESPONSE:", response.data);
+
+  return response.data?.data?.checkIn || null;
 }
 
 export async function fetchTodayCheckin() {
-  if (USE_MOCKS) {
-    await delay(300);
-    return null; // null => user hasn't checked in today yet
-  }
-  const { data } = await api.get("/checkins/today");
-  return data;
+  const response = await api.get("/api/checkins/today");
+
+  console.log("TODAY CHECK-IN RESPONSE:", response.data);
+
+  return response.data?.data?.checkIn || null;
 }
 
 export async function fetchMoodTrend(range = "7d") {
-  if (USE_MOCKS) {
-    await delay(500);
-    return range === "30d" ? moodTrend30d : moodTrend7d;
+  const days = range === "30d" ? 30 : 7;
+
+  const response = await api.get("/api/checkins/trends", {
+    params: { days },
+  });
+
+  console.log("MOOD TREND RESPONSE:", response.data);
+
+  const checkIns =
+    response.data?.data?.checkIns || [];
+
+  if (!Array.isArray(checkIns)) {
+    return [];
   }
-  const { data } = await api.get(`/checkins/trend`, { params: { range } });
-  return data;
+
+  const trends = checkIns
+    .map((checkIn) => ({
+      day: new Date(
+        checkIn.createdAt
+      ).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+      }),
+
+      mood: Number(checkIn.mood ?? 0),
+
+      stress: Number(
+        checkIn.stressLevel ?? 0
+      ),
+
+      sleep: Number(
+        checkIn.sleepHours ?? 0
+      ),
+
+      focus: Number(
+        checkIn.focusLevel ?? 0
+      ),
+
+      energy: Number(
+        checkIn.energyLevel ?? 0
+      ),
+
+      sleepQuality: Number(
+        checkIn.sleepQuality ?? 0
+      ),
+
+      createdAt: checkIn.createdAt,
+    }))
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt) -
+        new Date(b.createdAt)
+    );
+
+  console.log(
+    "TRANSFORMED TREND DATA:",
+    trends
+  );
+
+  return trends;
+}
+
+export async function fetchCheckIns(limit = 30) {
+  const response = await api.get("/api/checkins", {
+    params: {
+      limit,
+    },
+  });
+
+  console.log("CHECK-INS RESPONSE:", response.data);
+
+  const checkIns = response.data?.data?.checkIns || [];
+
+  return Array.isArray(checkIns) ? checkIns : [];
+}
+
+export async function fetchCheckIn(id) {
+  const response = await api.get(`/api/checkins/${id}`);
+
+  console.log("CHECK-IN RESPONSE:", response.data);
+
+  return response.data?.data?.checkIn || null;
 }
