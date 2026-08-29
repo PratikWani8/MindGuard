@@ -1,39 +1,120 @@
-import api, { USE_MOCKS, delay } from "./api";
-import { journals } from "../data/mockData";
+import api from "./api";
 
-export async function fetchJournals() {
-  if (USE_MOCKS) {
-    await delay(500);
-    return journals;
-  }
-  const { data } = await api.get("/journals");
-  return data;
-}
+const formatJournal = (journal, analysis = null) => {
+  if (!journal) return null;
 
-export async function fetchJournalById(id) {
-  if (USE_MOCKS) {
-    await delay(400);
-    return journals.find((j) => j.id === id) || null;
-  }
-  const { data } = await api.get(`/journals/${id}`);
-  return data;
-}
+  return {
+    id: journal._id,
+    title: journal.title || "Untitled entry",
+    content: journal.content || "",
 
-export async function createJournal(payload) {
-  if (USE_MOCKS) {
-    await delay(700);
-    return { id: "j_" + Date.now(), analyzed: false, date: new Date().toISOString().slice(0, 10), ...payload };
-  }
-  const { data } = await api.post("/journals", payload);
-  return data;
-}
+    date: new Date(journal.createdAt).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
 
-export async function analyzeJournal(id) {
-  if (USE_MOCKS) {
-    await delay(1400);
-    const found = journals.find((j) => j.id === id);
-    return found || journals[0];
-  }
-  const { data } = await api.post(`/journals/${id}/analyze`);
-  return data;
-}
+    excerpt:
+      journal.content?.length > 140
+        ? `${journal.content.slice(0, 140)}...`
+        : journal.content || "",
+
+    sentiment: analysis?.sentiment || "neutral",
+
+    themes: Array.isArray(analysis?.themes)
+      ? analysis.themes
+      : [],
+
+    emotions: Array.isArray(analysis?.emotions)
+      ? analysis.emotions
+      : [],
+
+    insight:
+      analysis?.insight ||
+      analysis?.insights?.[0] ||
+      "",
+
+    insights: Array.isArray(analysis?.insights)
+      ? analysis.insights
+      : [],
+
+    supportLevel: analysis?.supportLevel || null,
+
+    analyzed: Boolean(analysis),
+  };
+};
+
+export const createJournal = async ({ title, content }) => {
+  const response = await api.post("/api/journals", {
+    title,
+    content,
+  });
+
+  const data = response.data?.data || response.data;
+
+  return formatJournal(
+    data?.journal,
+    data?.analysis
+  );
+};
+
+export const fetchJournals = async () => {
+  const response = await api.get("/api/journals");
+
+  const data = response.data?.data || response.data;
+
+  const journals = data?.journals || [];
+
+  return journals.map((journal) =>
+    formatJournal(journal)
+  );
+};
+
+export const fetchJournalById = async (id) => {
+  const response = await api.get(`/api/journals/${id}`);
+
+  const data = response.data?.data || response.data;
+
+  return formatJournal(
+    data?.journal,
+    data?.analysis
+  );
+};
+
+export const analyzeJournal = async (id) => {
+  const response = await api.post(
+    `/api/journals/${id}/analyze`
+  );
+
+  const data = response.data?.data || response.data;
+
+  return formatJournal(
+    data?.journal,
+    data?.analysis
+  );
+};
+
+export const updateJournal = async (
+  id,
+  title,
+  content
+) => {
+  const response = await api.put(
+    `/api/journals/${id}`,
+    {
+      title,
+      content,
+    }
+  );
+
+  const data = response.data?.data || response.data;
+
+  return formatJournal(
+    data?.journal,
+    data?.analysis
+  );
+};
+
+export const deleteJournal = async (id) => {
+  return api.delete(`/api/journals/${id}`);
+};
