@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Smile, Flame, Moon, Target, ArrowRight, CalendarCheck, Wind, BookOpen } from "lucide-react";
+import {
+  Smile,
+  Flame,
+  Moon,
+  Target,
+  ArrowRight,
+  CalendarCheck,
+  Wind,
+  BookOpen,
+  Sparkles,
+  MessageCircle,
+} from "lucide-react";
+
 import GlassCard from "../../components/common/GlassCard";
 import Button from "../../components/common/Button";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
@@ -8,127 +20,695 @@ import StatCard from "../../components/cards/StatCard";
 import InsightCard from "../../components/cards/InsightCard";
 import RiskBadge from "../../components/cards/RiskBadge";
 import MultiTrendChart from "../../components/charts/MultiTrendChart";
+
 import { useAuth } from "../../context/AuthContext";
-import { fetchMoodTrend, fetchTodayCheckin } from "../../services/checkinApi";
-import { fetchWellbeingStatus, fetchDailyInsight } from "../../services/insightApi";
+
+import {
+  fetchMoodTrend,
+  fetchTodayCheckin,
+} from "../../services/checkinApi";
+
+import {
+  fetchWellbeingStatus,
+  fetchDailyInsight,
+} from "../../services/insightApi";
+
+import {
+  runAgent,
+  getLatestAgentDecision,
+} from "../../services/agentApi";
+
 import { fetchRecommendations } from "../../services/wellnessApi";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [trend, setTrend] = useState(null);
+
+  const [trend, setTrend] = useState([]);
   const [status, setStatus] = useState(null);
   const [insight, setInsight] = useState(null);
   const [checkedInToday, setCheckedInToday] = useState(null);
   const [recs, setRecs] = useState([]);
+  const [agent, setAgent] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [agentError, setAgentError] = useState("");
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetchMoodTrend("7d"),
-      fetchWellbeingStatus(),
-      fetchDailyInsight(),
-      fetchTodayCheckin(),
-      fetchRecommendations(),
-    ]).then(([t, s, i, c, r]) => {
-      setTrend(t);
-      setStatus(s);
-      setInsight(i);
-      setCheckedInToday(c);
-      setRecs(r.slice(0, 3));
+    const loadDashboard = async () => {
+      setLoading(true);
+
+      try {
+        const result = await fetchMoodTrend("7d");
+
+        console.log("DASHBOARD - TREND:", result);
+
+        if (Array.isArray(result)) {
+          setTrend(result);
+        } else if (Array.isArray(result?.checkIns)) {
+          setTrend(result.checkIns);
+        } else {
+          setTrend([]);
+        }
+      } catch (error) {
+        console.error(
+          "DASHBOARD - TREND ERROR:",
+          error.response?.data || error
+        );
+
+        setTrend([]);
+      }
+
+      try {
+        const result = await fetchTodayCheckin();
+
+        console.log("DASHBOARD - TODAY:", result);
+
+        setCheckedInToday(result || null);
+      } catch (error) {
+        console.error(
+          "DASHBOARD - TODAY ERROR:",
+          error.response?.data || error
+        );
+
+        setCheckedInToday(null);
+      }
+
+      try {
+        const result = await fetchWellbeingStatus();
+
+        console.log("DASHBOARD - STATUS:", result);
+
+        setStatus(result || null);
+      } catch (error) {
+        console.error(
+          "DASHBOARD - STATUS ERROR:",
+          error.response?.data || error
+        );
+
+        setStatus(null);
+      }
+
+      try {
+        const result = await fetchDailyInsight();
+
+        console.log("DASHBOARD - INSIGHT:", result);
+
+        setInsight(result || null);
+      } catch (error) {
+        console.error(
+          "DASHBOARD - INSIGHT ERROR:",
+          error.response?.data || error
+        );
+
+        setInsight(null);
+      }
+
+      try {
+  const result = await getLatestAgentDecision();
+
+  console.log(
+    "DASHBOARD - AGENT:",
+    result
+  );
+
+  setAgent(
+    result?.data || result || null
+  );
+
+} catch (error) {
+  // 404 simply means the agent has not run yet.
+  if (error.response?.status !== 404) {
+    console.error(
+      "DASHBOARD - AGENT ERROR:",
+      error.response?.data || error
+    );
+
+    setAgentError(
+      "Unable to load AI agent."
+    );
+  }
+
+  setAgent(null);
+}
+
+      try {
+        const result = await fetchRecommendations();
+
+        console.log("DASHBOARD - RECOMMENDATIONS:", result);
+
+        const recommendations = Array.isArray(result)
+          ? result
+          : result?.recommendations || [];
+
+        setRecs(recommendations.slice(0, 3));
+      } catch (error) {
+        console.error(
+          "DASHBOARD - RECOMMENDATIONS ERROR:",
+          error.response?.data || error
+        );
+
+        setRecs([]);
+      }
+
       setLoading(false);
-    });
+    };
+
+    loadDashboard();
   }, []);
 
-  if (loading) return <LoadingSpinner label="Loading your dashboard" size="lg" />;
+  const handleRunAgent = async () => {
+  try {
+    setAgentLoading(true);
+    setAgentError("");
 
-  const latest = trend[trend.length - 1];
+    const result = await runAgent();
+
+    console.log(
+      "DASHBOARD - AGENT RESULT:",
+      result
+    );
+
+    const agentResult =
+      result?.data || result;
+
+    if (agentResult?.agent) {
+      setAgent(agentResult.agent);
+    } else {
+      setAgent(agentResult);
+    }
+
+  } catch (error) {
+    console.error(
+      "DASHBOARD - AGENT RUN ERROR:",
+      error.response?.data || error
+    );
+
+    setAgentError(
+      error.response?.data?.message ||
+      "Unable to analyze your wellbeing right now."
+    );
+
+  } finally {
+    setAgentLoading(false);
+  }
+};
+
+  if (loading) {
+    return (
+      <LoadingSpinner
+        label="Loading your dashboard"
+        size="lg"
+      />
+    );
+  }
+
+  const latest =
+    trend.length > 0
+      ? trend[trend.length - 1]
+      : null;
+
+  console.log("DASHBOARD - LATEST CHECK-IN:", latest);
+
+  const mood = latest?.mood ?? null;
+  const stressLevel = latest?.stress ?? null;
+const sleepHours = latest?.sleep ?? null;
+
+  const wellbeingScore =
+    status?.score ??
+    status?.wellbeingScore ??
+    0;
+
+  const riskLevel =
+    status?.level ||
+    status?.riskLevel ||
+    "stable";
 
   return (
     <div className="space-y-6">
-      <GlassCard strong className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+      {/* ================= HEADER ================= */}
+      <GlassCard
+        strong
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
         <div>
-          <p className="text-sm text-ink-400">Welcome back,</p>
-          <h2 className="font-display text-2xl font-semibold text-ink-900">{user?.name?.split(" ")[0] || "there"} 👋</h2>
+          <p className="text-sm text-ink-400">
+            Welcome back,
+          </p>
+
+          <h2 className="font-display text-2xl font-semibold text-ink-900">
+            {user?.name?.split(" ")[0] || "there"} 👋
+          </h2>
         </div>
+
         <div className="flex items-center gap-3">
-          <RiskBadge level={status.level} size="lg" />
+          <RiskBadge
+            level={riskLevel}
+            size="lg"
+          />
         </div>
       </GlassCard>
 
+      {/* ================= STATS ================= */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Target} label="Wellbeing score" value={status.score} unit="/100" accent="violet" />
-        <StatCard icon={Smile} label="Mood today" value={latest.mood.toFixed(1)} unit="/5" accent="green" />
-        <StatCard icon={Flame} label="Stress today" value={latest.stress.toFixed(1)} unit="/10" accent="amber" />
-        <StatCard icon={Moon} label="Sleep last night" value={latest.sleep.toFixed(1)} unit="hrs" accent="aqua" />
+
+        <StatCard
+          icon={Target}
+          label="Wellbeing score"
+          value={wellbeingScore}
+          unit="/100"
+          accent="violet"
+        />
+
+        <StatCard
+          icon={Smile}
+          label="Mood today"
+          value={mood !== null ? mood.toFixed(1) : "—"}
+          unit="/10"
+          accent="green"
+        />
+
+        <StatCard
+          icon={Flame}
+          label="Stress today"
+          value={
+            stressLevel !== null
+              ? stressLevel.toFixed(1)
+              : "—"
+          }
+          unit="/10"
+          accent="amber"
+        />
+
+        <StatCard
+          icon={Moon}
+          label="Sleep last night"
+          value={
+            sleepHours !== null
+              ? sleepHours.toFixed(1)
+              : "—"
+          }
+          unit="hrs"
+          accent="aqua"
+        />
+
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <GlassCard>
-            <div className="flex items-center justify-between mb-1">
-              <p className="font-display font-semibold text-ink-900">7-day trend</p>
-              <Link to="/dashboard/trends" className="text-xs font-medium text-violet-600 hover:underline flex items-center gap-1">
-                Full trends <ArrowRight size={13} />
-              </Link>
-            </div>
-            <MultiTrendChart data={trend} />
-          </GlassCard>
+      {/* ================= AI AGENT ================= */}
 
-          <InsightCard title={insight.title} body={insight.body} />
+<GlassCard strong>
+
+  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+
+    <div className="flex items-start gap-4">
+
+      <div className="h-12 w-12 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
+        <Sparkles size={23} />
+      </div>
+
+      <div>
+
+        <p className="text-xs font-medium text-violet-600 uppercase tracking-wide">
+          MindGuard AI Agent
+        </p>
+
+        <h3 className="font-display text-xl font-semibold text-ink-900 mt-1">
+          Your wellbeing companion
+        </h3>
+
+        <p className="text-sm text-ink-400 mt-1">
+          I analyze your recent patterns and suggest your next best step.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <Button
+      onClick={handleRunAgent}
+      disabled={agentLoading}
+    >
+      <Sparkles
+        size={16}
+        className={
+          agentLoading
+            ? "animate-pulse"
+            : ""
+        }
+      />
+
+      {agentLoading
+        ? "Analyzing..."
+        : "Analyze my wellbeing"}
+    </Button>
+
+  </div>
+
+
+  {agentError && (
+    <div className="mt-4 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+      {agentError}
+    </div>
+  )}
+
+
+  {!agent ? (
+
+    <div className="mt-6 rounded-2xl bg-violet-50/60 border border-violet-100 p-5">
+
+      <p className="text-sm text-ink-600">
+        Your AI agent hasn't analyzed your latest wellbeing data yet.
+      </p>
+
+      <p className="text-xs text-ink-400 mt-1">
+        Complete a check-in, then let MindGuard analyze your recent patterns.
+      </p>
+
+    </div>
+
+  ) : (
+
+    <div className="mt-6 grid lg:grid-cols-3 gap-4">
+
+      {/* Observation */}
+
+      <div className="rounded-2xl bg-slate-50 p-5">
+
+        <p className="text-xs font-medium text-ink-400 uppercase tracking-wide">
+          What I noticed
+        </p>
+
+        <p className="text-sm text-ink-700 leading-6 mt-2">
+          {agent.observation ||
+            "No observation available."}
+        </p>
+
+      </div>
+
+
+      {/* Reasoning */}
+
+      <div className="rounded-2xl bg-slate-50 p-5">
+
+        <p className="text-xs font-medium text-ink-400 uppercase tracking-wide">
+          AI reasoning
+        </p>
+
+        <p className="text-sm text-ink-700 leading-6 mt-2">
+          {agent.reasoning ||
+            "No reasoning available."}
+        </p>
+
+      </div>
+
+
+      {/* Action */}
+
+      <div className="rounded-2xl bg-violet-50 p-5">
+
+        <p className="text-xs font-medium text-violet-600 uppercase tracking-wide">
+          Recommended action
+        </p>
+
+        <p className="font-display font-semibold text-ink-900 mt-2">
+          {agent.action
+            ?.replaceAll("_", " ")
+            .toLowerCase()
+            .replace(/\b\w/g, (char) =>
+              char.toUpperCase()
+            ) ||
+            "No action"}
+        </p>
+
+        <p className="text-sm text-ink-600 leading-6 mt-2">
+          {agent.recommendation ||
+            "No recommendation available."}
+        </p>
+
+      </div>
+
+    </div>
+
+  )}
+
+
+  {/* Follow-up */}
+
+  {agent?.followUpRequired &&
+    agent?.followUpQuestion && (
+
+      <div className="mt-4 rounded-2xl bg-aqua-400/10 border border-aqua-400/20 p-4">
+
+        <div className="flex items-start gap-3">
+
+          <MessageCircle
+            size={18}
+            className="text-aqua-500 mt-0.5 shrink-0"
+          />
+
+          <div>
+
+            <p className="text-xs font-medium text-aqua-600 uppercase tracking-wide">
+              AI follow-up
+            </p>
+
+            <p className="text-sm text-ink-700 mt-1">
+              {agent.followUpQuestion}
+            </p>
+
+          </div>
+
         </div>
 
+      </div>
+
+    )}
+
+</GlassCard>
+
+      {/* ================= NO CHECK-IN ================= */}
+      {!latest && (
+        <GlassCard strong>
+          <div className="text-center py-8">
+
+            <div className="h-14 w-14 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center mx-auto mb-4">
+              <CalendarCheck size={25} />
+            </div>
+
+            <h3 className="font-display text-xl font-semibold text-ink-900">
+              No check-ins yet
+            </h3>
+
+            <p className="text-sm text-ink-400 mt-2 max-w-md mx-auto">
+              Complete your first check-in and your real
+              mood, stress, sleep and wellbeing data will
+              appear here.
+            </p>
+
+            <Button
+              as={Link}
+              to="/dashboard/checkin"
+              className="mt-5"
+            >
+              Start check-in
+              <ArrowRight size={16} />
+            </Button>
+
+          </div>
+        </GlassCard>
+      )}
+
+      {/* ================= CONTENT ================= */}
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* TREND */}
+          <GlassCard>
+
+            <div className="flex items-center justify-between mb-1">
+
+              <p className="font-display font-semibold text-ink-900">
+                7-day trend
+              </p>
+
+              <Link
+                to="/dashboard/trends"
+                className="text-xs font-medium text-violet-600 hover:underline flex items-center gap-1"
+              >
+                Full trends
+                <ArrowRight size={13} />
+              </Link>
+
+            </div>
+
+            {trend.length > 0 ? (
+              <MultiTrendChart data={trend} />
+            ) : (
+              <div className="h-64 flex items-center justify-center text-sm text-ink-400">
+                Complete a check-in to see your trends.
+              </div>
+            )}
+
+          </GlassCard>
+
+          {/* INSIGHT */}
+          {insight ? (
+            <InsightCard
+              title={
+                insight.title ||
+                insight.heading ||
+                "Daily insight"
+              }
+              body={
+                insight.body ||
+                insight.summary ||
+                insight.text ||
+                "Your personalized insight will appear here."
+              }
+            />
+          ) : (
+            <GlassCard>
+              <p className="font-display font-semibold text-ink-900">
+                Daily insight
+              </p>
+
+              <p className="text-sm text-ink-400 mt-2">
+                Complete a check-in to receive personalized
+                insights.
+              </p>
+            </GlassCard>
+          )}
+
+        </div>
+
+        {/* ================= RIGHT SIDEBAR ================= */}
         <div className="space-y-6">
+
+          {/* TODAY CHECK-IN */}
           <GlassCard strong>
+
             <div className="flex items-center gap-3 mb-3">
+
               <div className="h-10 w-10 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center">
                 <CalendarCheck size={19} />
               </div>
+
               <p className="font-display font-semibold text-ink-900">
-                {checkedInToday ? "You checked in today" : "Have you checked in today?"}
+                {checkedInToday
+                  ? "You checked in today"
+                  : "Have you checked in today?"}
               </p>
+
             </div>
+
             <p className="text-sm text-ink-500 mb-4">
               {checkedInToday
                 ? "Great consistency — come back tomorrow to keep your trend accurate."
-                : "A quick 30-second check-in keeps your insights sharp and your plan personalized."}
+                : "A quick check-in keeps your insights sharp and your plan personalized."}
             </p>
-            <Button as={Link} to="/dashboard/checkin" className="w-full" disabled={!!checkedInToday}>
-              {checkedInToday ? "Checked in ✓" : "Start check-in"}
+
+            <Button
+              as={Link}
+              to="/dashboard/checkin"
+              className="w-full"
+              disabled={!!checkedInToday}
+            >
+              {checkedInToday
+                ? "Checked in ✓"
+                : "Start check-in"}
             </Button>
+
           </GlassCard>
 
+          {/* RECOMMENDATIONS */}
           <GlassCard>
-            <p className="font-display font-semibold text-ink-900 mb-3">Recommended for you</p>
+
+            <p className="font-display font-semibold text-ink-900 mb-3">
+              Recommended for you
+            </p>
+
             <div className="space-y-3">
-              {recs.map((r) => (
-                <div key={r.id} className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-aqua-400/20 text-aqua-500 flex items-center justify-center shrink-0">
-                    <Wind size={16} />
+
+              {recs.length > 0 ? (
+                recs.map((r, index) => (
+                  <div
+                    key={
+                      r.id ||
+                      r._id ||
+                      index
+                    }
+                    className="flex items-center gap-3"
+                  >
+
+                    <div className="h-9 w-9 rounded-xl bg-aqua-400/20 text-aqua-500 flex items-center justify-center shrink-0">
+                      <Wind size={16} />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink-800 truncate">
+                        {r.title || "Wellness activity"}
+                      </p>
+
+                      <p className="text-xs text-ink-400">
+                        {r.duration ||
+                          "Personalized activity"}
+                      </p>
+                    </div>
+
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink-800 truncate">{r.title}</p>
-                    <p className="text-xs text-ink-400">{r.duration}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-ink-400">
+                  Complete a check-in to get personalized
+                  recommendations.
+                </p>
+              )}
+
             </div>
-            <Button as={Link} to="/dashboard/wellness-plan" variant="secondary" size="sm" className="w-full mt-4">
+
+            <Button
+              as={Link}
+              to="/dashboard/wellness-plan"
+              variant="secondary"
+              size="sm"
+              className="w-full mt-4"
+            >
               View wellness plan
             </Button>
+
           </GlassCard>
 
+          {/* JOURNAL */}
           <GlassCard className="flex items-center gap-3">
+
             <div className="h-10 w-10 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0">
               <BookOpen size={18} />
             </div>
+
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-ink-800">Write in your journal</p>
-              <p className="text-xs text-ink-400">Unpack today in a few sentences.</p>
+
+              <p className="text-sm font-medium text-ink-800">
+                Write in your journal
+              </p>
+
+              <p className="text-xs text-ink-400">
+                Unpack today in a few sentences.
+              </p>
+
             </div>
-            <Link to="/dashboard/journal" className="text-violet-600">
+
+            <Link
+              to="/dashboard/journal"
+              className="text-violet-600"
+            >
               <ArrowRight size={17} />
             </Link>
+
           </GlassCard>
+
         </div>
       </div>
     </div>
